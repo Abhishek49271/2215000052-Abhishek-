@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Average Calculator Microservice</title>
+  <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+  <div class="container">
+    <h2>🌟 Average Calculator</h2>
+    
+    <label for="numberType">Select Number Type:</label>
+    <select id="numberType">
+      <option value="p">Prime</option>
+      <option value="f">Fibonacci</option>
+      <option value="e">Even</option>
+      <option value="r">Random</option>
+    </select>
+
+    <button onclick="fetchAverage()">Get Numbers</button>
+
+    <h3>Response:</h3>
+    <pre id="responseBox">{ "windowPrevState": [], "windowCurrState": [], "numbers": [], "avg": 0.0 }</pre>
+  </div>
+
+  <script>
+    async function fetchAverage() {
+      const type = document.getElementById("numberType").value;
+      const responseBox = document.getElementById("responseBox");
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 500); // Max 500ms timeout
+
+        const res = await fetch(`http://localhost:9876/numbers/${type}`, {
+          method: 'GET',
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!res.ok) throw new Error("Failed to fetch");
+
+        const data = await res.json();
+        responseBox.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        responseBox.textContent = JSON.stringify({ error: "Request failed or took too long." }, null, 2);
+      }
+    }
+  </script>
+</body>
+</html>
